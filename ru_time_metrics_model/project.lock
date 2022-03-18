@@ -1,0 +1,110 @@
+split:
+  cmd: python -m spacy run split
+  script:
+    - python scripts/split.py /corpus
+  deps: []
+  outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+load_json:
+  cmd: python -m spacy run load_json
+  script:
+    - python scripts/load_json.py assets/entries.json 0.2 11 24880
+  deps:
+    - path: assets/entries.json
+      md5: 689d9078570df74bb67274a12f3e36e8
+    - path: scripts/load_json.py
+      md5: 6ca3755945d170a2abf2ee2701ce5c36
+  outs:
+    - path: assets/train.jsonl
+      md5: 2dc11e6a0b620660caac994ec45ceed0
+    - path: assets/dev.jsonl
+      md5: 7eae9cd79dd13319ef94311ede4f0bf1
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+convert:
+  cmd: python -m spacy run convert
+  script:
+    - python scripts/convert.py ru assets/train.jsonl corpus/train.spacy
+    - python scripts/convert.py ru assets/dev.jsonl corpus/dev.spacy
+  deps:
+    - path: assets/train.jsonl
+      md5: 2dc11e6a0b620660caac994ec45ceed0
+    - path: assets/dev.jsonl
+      md5: 7eae9cd79dd13319ef94311ede4f0bf1
+    - path: scripts/convert.py
+      md5: 35ee9ecddb27d1dbf74d9bc36fb44d0b
+  outs:
+    - path: corpus/train.spacy
+      md5: 248fbee68a42d04d38d7b1bf0d9d6602
+    - path: corpus/dev.spacy
+      md5: b40496f1e6043829c9480c730b816f3e
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+train:
+  cmd: python -m spacy run train
+  script:
+    - python -m spacy train configs/config.cfg --output training/ --paths.train corpus/train.spacy
+      --paths.dev corpus/dev.spacy --nlp.lang ru --gpu-id 0
+  deps:
+    - path: configs/config.cfg
+      md5: de7029939414685b439956ffaa65a942
+    - path: corpus/train.spacy
+      md5: 248fbee68a42d04d38d7b1bf0d9d6602
+    - path: corpus/dev.spacy
+      md5: b40496f1e6043829c9480c730b816f3e
+  outs:
+    - path: training/model-best
+      md5: 374434e58f8fc5b7fb565c7e9059d486
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+evaluate:
+  cmd: python -m spacy run evaluate
+  script:
+    - python -m spacy evaluate training/model-best corpus/dev.spacy --output training/metrics.json
+  deps:
+    - path: corpus/dev.spacy
+      md5: 54c230c929c4a57784bc29b949e40bab
+    - path: training/model-best
+      md5: ddd2a8f925361c2d972275f1b22e0a15
+  outs:
+    - path: training/metrics.json
+      md5: e0dd8d300b42bcfb118a68df0df66295
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+sweeps:
+  cmd: python -m spacy run sweeps
+  script:
+    - python scripts/sweeps.py configs/config.cfg training/
+  deps:
+    - path: configs/config.cfg
+      md5: d692b3c44fe91d3e68bef1a018530297
+    - path: corpus/train.spacy
+      md5: 248fbee68a42d04d38d7b1bf0d9d6602
+    - path: corpus/dev.spacy
+      md5: b40496f1e6043829c9480c730b816f3e
+  outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+make-timeline:
+  cmd: python -m spacy run make-timeline
+  script:
+    - python scripts/make_timeline.py assets/entries.json
+  deps:
+    - path: assets/entries.json
+      md5: 689d9078570df74bb67274a12f3e36e8
+  outs:
+    - path: corpus/timeline.jsonl
+      md5: f53f1acfb98ad51483fbaafd85f42952
+  spacy_version: 3.2.0
+  spacy_git_version: 0fc3dee77
+read-timeline:
+  cmd: python -m spacy run read-timeline
+  script:
+    - 'python scripts/read_timeline.py corpus/timeline.jsonl training/model-best '
+  deps:
+    - path: corpus/timeline.jsonl
+      md5: f53f1acfb98ad51483fbaafd85f42952
+  outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36

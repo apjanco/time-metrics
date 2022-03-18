@@ -1,0 +1,140 @@
+title: "Russian Time Cat Model using Prozhito Data"
+description: "A textcat_multilabel project for spaCy v3."
+# Variables can be referenced across the project.yml using ${vars.var_name}
+vars:
+  name: "ru_time_metrics_model"
+  lang: "ru"
+  # Set your GPU ID, -1 is CPU
+  gpu_id: 0
+  version: "0.0.1"
+  django: "entries.json"
+  train: train.jsonl
+  dev: dev.jsonl
+  model: training/model-best
+  test_size: 0.2
+  random_state: 11
+  examples: 24880 # number of examples per class 
+  config: "config.cfg"
+
+# These are the directories that the project needs. The project CLI will make
+# sure that they always exist.
+directories: ["assets", "corpus", "configs", "training", "scripts", "packages"]
+
+# Assets that should be downloaded or available in the directory. 
+assets:
+  - dest: "assets/${vars.django}"
+    url: "https://drive.google.com/uc?export=download&id=1npGlg9VxD_Wjm8sLkdjIGrSgscngkOYS"
+    description: "4Gb Datadump from Django project"
+  
+# Workflows are sequences of commands (see below) executed in order. You can
+# run them via "spacy project run [workflow]". If a commands's inputs/outputs
+# haven't changed, it won't be re-run.
+workflows:
+  all:
+    - load_json
+    - convert
+    - train
+    - evaluate
+    - package
+    - train-search
+    - read-timeline
+
+# Project commands, specified in a style similar to CI config files (e.g. Azure
+# pipelines). The name is the command name that lets you trigger the command
+# via "spacy project run [command] [path]". The help message is optional and
+# shown when executing "spacy project run [optional command] [path] --help".
+commands:
+  - name: "load_json"
+    help: "Convert the Django data dump to jsonl, split into train/dev and adds labels using the entry date"
+    script:
+      - "python scripts/load_json.py assets/${vars.django} ${vars.test_size} ${vars.random_state} ${vars.examples}"
+    deps:
+      - "assets/${vars.django}"
+      - "scripts/load_json.py"
+    outputs:
+      - "assets/train.jsonl"
+      - "assets/dev.jsonl"
+      
+  - name: "convert"
+    help: "Convert the jsonl data to spaCy's binary format"
+    script:
+      - "python scripts/convert.py ${vars.lang} assets/${vars.train} corpus/train.spacy"
+      - "python scripts/convert.py ${vars.lang} assets/${vars.dev} corpus/dev.spacy"
+    deps:
+      - "assets/${vars.train}"
+      - "assets/${vars.dev}"
+      - "scripts/convert.py"
+    outputs:
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+
+  - name: "train"
+    help: "Train the textcat model"
+    script:
+      - "python -m spacy train configs/${vars.config} --output training/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy --nlp.lang ${vars.lang} --gpu-id ${vars.gpu_id}"
+    deps:
+      - "configs/${vars.config}"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+    outputs:
+      - "training/model-best"
+  
+  - name: "train-search"
+    help: "Run customized training runs for hyperparameter search using [Weights & Biases Sweeps](https://docs.wandb.ai/guides/sweeps)"
+    script:
+      - "python ./scripts/sweeps_using_config.py configs/${vars.config} training/"
+    deps:
+      - "configs/${vars.config}"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+
+  - name: "evaluate"
+    help: "Evaluate the model and export metrics"
+    script:
+      - "python -m spacy evaluate training/model-best corpus/dev.spacy --output training/metrics.json"
+    deps:
+      - "corpus/dev.spacy"
+      - "training/model-best"
+    outputs:
+      - "training/metrics.json"
+
+  - name: package
+    help: "Package the trained model as a pip package"
+    script:
+      - "python -m spacy package training/model-best packages --name ${vars.name} --version ${vars.version} --force"
+    deps:
+      - "training/model-best"
+    outputs_no_cache:
+      - "packages/${vars.lang}_${vars.name}-${vars.version}/dist/${vars.lang}_${vars.name}-${vars.version}.tar.gz"
+
+  - name: visualize-model
+    help: Visualize the model's output interactively using Streamlit
+    script:
+      - "streamlit run scripts/visualize_model.py training/model-best \"How can I get chewy chocolate chip cookies?\n<p>My chocolate chips cookies are always too crisp. How can I get chewy cookies, like those of Starbucks?</p>\n<hr/>\n<p>Thank you to everyone who has answered. So far the tip that had the biggest impact was to chill and rest the dough, however I also increased the brown sugar ratio and increased a bit the butter. Also adding maple syrup helped. </p>\""
+    deps:
+      - "scripts/visualize_model.py"
+      - "training/model-best"
+
+  - name: make-timeline
+    help: "Create a json file with all entries in chronological order"
+    script:
+      - "python scripts/make_timeline.py assets/${vars.django}"
+    deps:
+      - "assets/${vars.django}"
+    outputs_no_cache:
+      - "corpus/timeline.jsonl"
+
+  - name: read-timeline
+    help: "Use a trained model to read the timeline and record predictions"
+    script:
+      - "python scripts/read_timeline.py corpus/timeline.jsonl ${vars.model} "
+    deps:
+      - "corpus/timeline.jsonl"
+      
+  - name: visualize-timeline
+    help: "Create a streamlit app and scatterplot to visualize the data"
+    script:
+      - "streamlit run scripts/visualize_timeline.py"
+    deps: 
+      - "scripts/visualize_timeline.py"
+      - "corpus/timeline_output.csv"

@@ -1,3 +1,8 @@
+ru_time_metrics_model/training
+ru_time_metrics_model/wandb
+ru_time_metrics_model/assets 
+ru_time_metrics_model/corpus
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
