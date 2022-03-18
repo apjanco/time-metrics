@@ -21,16 +21,23 @@ vars:
 directories: ["assets", "corpus", "configs", "training", "scripts", "packages"]
 
 # Assets that should be downloaded or available in the directory. 
+# Note that assets will download the prepared training data
+# To start from scratch from the full dataset run the fetch command
 assets:
-  - dest: "assets/${vars.django}"
-    url: "https://drive.google.com/uc?export=download&id=1npGlg9VxD_Wjm8sLkdjIGrSgscngkOYS"
-    description: "4Gb Datadump from Django project"
-  
+  - dest: "assets/dev.jsonl"
+    url: "https://drive.google.com/uc?export=download&id=1LwxyplKhCdrIF58-oGMCIrOCTatuSYqn"
+    description: "82mb test data"
+
+  - dest: "assets/train.jsonl"
+    url: "https://drive.google.com/uc?export=download&id=1XPmMSOeTrdE0qulrkuqMRYF1R-p92_pl&confirm=t"
+    description: "329mb training data"
+
 # Workflows are sequences of commands (see below) executed in order. You can
 # run them via "spacy project run [workflow]". If a commands's inputs/outputs
 # haven't changed, it won't be re-run.
 workflows:
   all:
+    - fetch
     - load_json
     - convert
     - train
@@ -44,6 +51,11 @@ workflows:
 # via "spacy project run [command] [path]". The help message is optional and
 # shown when executing "spacy project run [optional command] [path] --help".
 commands:
+  - name: "fetch"
+    help: "Fetch the 4Gb entries.json file"
+    script: 
+      - "wget -O entries.json -P assets/ https://drive.google.com/uc?export=download&id=1npGlg9VxD_Wjm8sLkdjIGrSgscngkOYS&confirm=t"
+
   - name: "load_json"
     help: "Convert the Django data dump to jsonl, split into train/dev and adds labels using the entry date"
     script:

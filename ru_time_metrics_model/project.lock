@@ -108,3 +108,11 @@ read-timeline:
   outs: []
   spacy_version: 3.2.3
   spacy_git_version: 99425de36
+fetch:
+  cmd: python -m spacy run fetch
+  script:
+    - wget -P assets/ https://drive.google.com/uc?export=download&id=1npGlg9VxD_Wjm8sLkdjIGrSgscngkOYS&confirm=t
+  deps: []
+  outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
