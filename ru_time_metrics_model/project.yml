@@ -60,7 +60,7 @@ commands:
   - name: "load_json"
     help: "Convert the Django data dump to jsonl, split into train/dev and adds labels using the entry date"
     script:
-      - "python scripts/load_json.py assets/${vars.django} ${vars.test_size} ${vars.random_state} ${vars.examples}"
+      - "python scripts/load_json.py ./assets/${vars.django} ${vars.test_size} ${vars.random_state} ${vars.examples}"
     deps:
       - "assets/${vars.django}"
       - "scripts/load_json.py"
