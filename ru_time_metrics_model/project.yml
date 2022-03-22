@@ -55,7 +55,7 @@ commands:
   - name: "fetch"
     help: "Fetch the 4Gb entries.json file"
     script: 
-      - "wget -O entries.json -P assets/ https://drive.google.com/uc?export=download&id=1npGlg9VxD_Wjm8sLkdjIGrSgscngkOYS&confirm=t"
+      - "wget -O entries.json -P ./assets/ https://drive.google.com/uc?export=download&id=1npGlg9VxD_Wjm8sLkdjIGrSgscngkOYS&confirm=t"
 
   - name: "load_json"
     help: "Convert the Django data dump to jsonl, split into train/dev and adds labels using the entry date"
