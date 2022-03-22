@@ -70,8 +70,9 @@ def load_json(input_path: Path, test_size: float, random_state: int, examples: i
     typer.echo(typer.style(f"⭐ Created {len(train_set)} training docs and {len(val_set)} validation docs", fg=typer.colors.GREEN, bold=True))        
     
 
-    srsly.write_jsonl("./assets/train.jsonl", train_set)
-    srsly.write_jsonl('./assets/dev.jsonl', val_set)
+    srsly.write_jsonl("time-metrics/ru_time_metrics_model/assets/train.jsonl", train_set)
+    srsly.write_jsonl('time-metrics/ru_time_metrics_model/assets/dev.jsonl', val_set)
+
 
     typer.echo(typer.style(f"⭐ Done", fg=typer.colors.GREEN, bold=True))
 
