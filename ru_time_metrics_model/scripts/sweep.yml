@@ -1,7 +1,7 @@
 method: bayes
 
 metric:
-  name: cats_score
+  name: cats_f_per_type.SOVIET.f #cats_score
   goal: maximize
   target: 0.95
 

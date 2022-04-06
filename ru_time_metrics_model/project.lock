@@ -116,3 +116,13 @@ fetch:
   outs: []
   spacy_version: 3.2.3
   spacy_git_version: 99425de36
+coverage:
+  cmd: python -m spacy run coverage
+  script:
+    - python scripts/coverage.py
+  deps:
+    - path: assets/entries.json
+      md5: 689d9078570df74bb67274a12f3e36e8
+  outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36

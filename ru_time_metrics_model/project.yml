@@ -5,7 +5,7 @@ vars:
   name: "ru_time_metrics_model"
   lang: "ru"
   # Set your GPU ID, -1 is CPU
-  gpu_id: 0
+  gpu_id: -1
   version: "0.0.1"
   django: "entries.json"
   train: train.jsonl
@@ -151,3 +151,10 @@ commands:
     deps: 
       - "scripts/visualize_timeline.py"
       - "corpus/timeline_output.csv"
+
+  - name: coverage
+    help: "Create a streamlit app and scatterplot to visualize the data"
+    script:
+      - "python scripts/coverage.py"
+    deps: 
+      - "assets/entries.json"

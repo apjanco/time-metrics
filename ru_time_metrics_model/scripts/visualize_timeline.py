@@ -16,9 +16,9 @@ def main():
     df = get_data()
     start_date = st.sidebar.date_input('start date', datetime.date(1800,1,1))
     end_date = st.sidebar.date_input('end date', datetime.date(2018,1,1))
-    empire_threshold = st.sidebar.slider('empire threshold',value=0.9, min_value=0.0, max_value=1.0)
-    soviet_threshold = st.sidebar.slider('soviet threshold',value=0.9, min_value=0.0, max_value=1.0)
-    post_threshold = st.sidebar.slider('post threshold',value=0.9, min_value=0.0, max_value=1.0)
+    empire_threshold = st.sidebar.slider('empire threshold',value=0.0, min_value=0.0, max_value=1.0)
+    soviet_threshold = st.sidebar.slider('soviet threshold',value=0.0, min_value=0.0, max_value=1.0)
+    post_threshold = st.sidebar.slider('post threshold',value=0.0, min_value=0.0, max_value=1.0)
     
     
     
@@ -36,7 +36,7 @@ def main():
     df['post'] = df['post'].apply(lambda x: x if x >= post_threshold else None)
     
 
-    fig = px.scatter(
+    fig = px.line(
         df, 
         x="date", 
         y=df.columns[4:], 
